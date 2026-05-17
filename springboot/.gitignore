@@ -1,0 +1,25 @@
+# 构建产物
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!src/main/**/target/
+!src/test/**/target/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.iml
+
+# 日志
+*.log
+
+# 敏感配置（用 application-example.yml 作为模板）
+application.yml
+
+# 数据库文件
+data/
+
+# 系统
+.DS_Store
+Thumbs.db
