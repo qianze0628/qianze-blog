@@ -1,7 +1,9 @@
 package com.qianze.controller;
 
+import com.qianze.config.JwtUtil;
 import com.qianze.entity.Post;
 import com.qianze.service.PostService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,9 +32,9 @@ public class PostController {
     }
 
     @PutMapping
-    public ResponseEntity<?> updateAll(@RequestBody Map<String, Object> body) {
-        if (!password.equals(body.get("password")))
-            return ResponseEntity.status(401).body(Map.of("error", "密码错误"));
+    public ResponseEntity<?> updateAll(@RequestBody Map<String, Object> body, HttpServletRequest request) {
+        if (!JwtUtil.checkWrite(request, (String) body.get("password"), password))
+            return ResponseEntity.status(403).body(Map.of("error", "无权限"));
         try {
             @SuppressWarnings("unchecked")
             var list = (List<Map<String, Object>>) body.get("data");

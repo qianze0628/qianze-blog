@@ -1,5 +1,6 @@
 package com.qianze.controller;
 
+import com.qianze.config.JwtUtil;
 import com.qianze.service.VisitService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +27,7 @@ public class StatsController {
     }
 
     private boolean isAuthed(HttpServletRequest request, Map<String, String> body) {
-        if (Boolean.TRUE.equals(request.getAttribute("jwtValid"))) return true;
-        return password.equals(body.get("password"));
+        if (JwtUtil.isAuthed(request)) return true;
+        return password.split(",")[0].trim().equals(body.get("password"));
     }
 }

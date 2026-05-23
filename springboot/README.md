@@ -1,101 +1,138 @@
-# qianze 博客 — SpringBoot 后端 (MyBatis + MySQL)
+# qianze 博客 — SpringBoot 后端 v3.0
 
-基于 SpringBoot 3.3 + MyBatis 3.0 + MySQL 的 REST API 后端。
+SpringBoot 3.3 + MyBatis 3.0 + MySQL 8.0 的 REST API 后端。
 
-配套前端: `blog-react/` (React 18 + Vite + Tailwind CSS + Framer Motion + Recharts)
+配套前端：`react/`（React 18 + Vite + Tailwind CSS + Zustand + Framer Motion）
+
+---
 
 ## 技术栈
 
 | 层 | 技术 |
 |----|------|
 | 框架 | SpringBoot 3.3.2 |
-| ORM | MyBatis 3.0.4 (注解 SQL) |
+| ORM | MyBatis 3.0.4（注解 SQL） |
 | 数据库 | MySQL 8.0 |
-| 认证 | JWT (jjwt 0.12.6)，默认 1 小时过期 |
+| 认证 | JWT（jjwt 0.12.6） |
+| IP 定位 | ip2region 2.7.0 |
 | Java | JDK 17 |
+
+---
 
 ## 快速启动
 
 ```bash
-# 1. 安装 MySQL 并建库
+# 1. 建库
 mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS blog DEFAULT CHARSET utf8mb4;"
 
-# 2. 建表
+# 2. 建表（首次）
 mysql -u root -p blog < src/main/resources/migrate.sql
 
-# 3. 修改 application.yml 中的数据库密码
+# 3. 增量迁移（已有数据时）
+mysql -u root -p blog < src/main/resources/alter.sql
 
 # 4. 启动
-./mvnw spring-boot:run
+mvn spring-boot:run
 ```
+
+---
 
 ## 项目结构
 
 ```
 src/main/java/com/qianze/
 ├── BlogApplication.java           # 启动入口
-├── entity/        (7 个 POJO)
-│   ├── Skill/Project/Post/Note/Friend/GuestbookEntry/VisitLog
-├── mapper/        (7 个 MyBatis 注解接口)
-├── service/       (7 个 Service)
-├── controller/    (8 个 REST Controller)
-│   ├── AuthController      POST /api/auth/login
-│   ├── SkillController     GET/PUT /api/skills
-│   ├── ProjectController   GET/PUT /api/projects
-│   ├── PostController      GET/PUT /api/posts, GET /api/posts/{slug}
-│   ├── NoteController      GET/PUT /api/notes
-│   ├── FriendController    GET/PUT /api/friends
-│   ├── GuestbookController GET/POST /api/guestbook
-│   ├── StatsController     POST /api/stats
-│   └── VisitController     POST /api/visit
-└── config/
-    ├── CorsConfig.java     # 跨域
-    ├── JwtUtil.java        # JWT 工具
-    ├── JwtFilter.java      # JWT 过滤器
-    └── WebConfig.java      # 注册过滤器
+├── config/
+│   ├── CorsConfig.java            # CORS 跨域（/api/** /uploads/** /music/**）
+│   ├── WebConfig.java             # JwtFilter 注册 + 静态资源映射
+│   ├── JwtUtil.java               # JWT 签发/验证/角色提取
+│   ├── JwtFilter.java             # JWT 请求过滤（设置 jwtValid + jwtRole）
+│   └── UaParser.java              # User-Agent 解析（浏览器/OS/设备/型号）
+├── entity/（9 个 POJO）
+│   ├── Skill.java                 # 技能
+│   ├── Project.java               # 项目
+│   ├── Post.java                  # 文章
+│   ├── Note.java                  # 碎念
+│   ├── Friend.java                # 友链
+│   ├── GuestbookEntry.java        # 留言（含 IP/UA/地理/设备）
+│   ├── VisitLog.java              # 访问日志（含 IP/UA/地理/设备）
+│   ├── Song.java                  # 歌曲（含 songId/playUrl/lyricUrl）
+│   └── GuestMusicLog.java         # 访客点歌记录
+├── mapper/（9 个 MyBatis 接口）
+│   ├── SkillMapper.java           # 查询/批量替换
+│   ├── ProjectMapper.java         # 查询/批量替换
+│   ├── PostMapper.java            # 查询/按slug查/批量替换
+│   ├── NoteMapper.java            # 查询/批量替换
+│   ├── FriendMapper.java          # 查询/批量替换
+│   ├── GuestbookMapper.java       # 查询/新增/删除
+│   ├── VisitLogMapper.java        # 写入/统计查询
+│   ├── SongMapper.java            # CRUD + 播放次数 + songId去重
+│   └── GuestMusicLogMapper.java   # 写入/查询
+├── service/（9 个 Service）
+│   ├── SkillService.java          # 批量替换技能
+│   ├── ProjectService.java        # 批量替换项目
+│   ├── PostService.java           # 查询/批量替换文章
+│   ├── NoteService.java           # 批量替换碎念
+│   ├── FriendService.java         # 批量替换友链
+│   ├── GuestbookService.java      # 留言创建（UA解析+IP定位）
+│   ├── VisitService.java          # 访问记录（UA解析+IP定位）
+│   ├── SongService.java           # 歌曲CRUD + songId去重
+│   ├── IpService.java             # ip2region 地理定位 + 客户端IP提取
+│   └── ImportService.java         # 音乐下载（mp3/封面→/music/）
+└── controller/（11 个 Controller）
+    ├── AuthController.java         # 登录/分享Token/查询角色
+    ├── SkillController.java        # GET/PUT /api/skills
+    ├── ProjectController.java      # GET/PUT /api/projects
+    ├── PostController.java         # GET/PUT /api/posts
+    ├── NoteController.java         # GET/PUT /api/notes
+    ├── FriendController.java       # GET/PUT /api/friends
+    ├── GuestbookController.java    # GET/POST/DELETE /api/guestbook
+    ├── StatsController.java        # POST /api/stats
+    ├── VisitController.java        # POST /api/visit
+    ├── SongController.java         # 歌曲CRUD/搜索/导入/播放/访客追踪
+    └── FileController.java         # 文件上传（图片/音频/封面/歌词）
 ```
 
-## REST API
+---
 
-| 方法 | 路径 | 认证 | 说明 |
-|------|------|------|------|
-| POST | /api/auth/login | 密码 | 获取 JWT Token |
-| GET | /api/skills | 否 | 技能列表 |
-| PUT | /api/skills | JWT/密码 | 批量更新 |
-| GET | /api/projects | 否 | 项目列表（含 url） |
-| PUT | /api/projects | JWT/密码 | 批量更新 |
-| GET | /api/posts | 否 | 文章列表（含 featured） |
-| GET | /api/posts/{slug} | 否 | 文章详情 |
-| PUT | /api/posts | JWT/密码 | 批量更新 |
-| GET | /api/notes | 否 | 碎念列表 |
-| PUT | /api/notes | JWT/密码 | 批量更新 |
-| GET | /api/friends | 否 | 友链列表 |
-| PUT | /api/friends | JWT/密码 | 批量更新 |
-| GET | /api/guestbook | 否 | 留言列表 |
-| POST | /api/guestbook | 否 | 新增留言 |
-| POST | /api/stats | JWT/密码 | 访问统计 |
-| POST | /api/visit | 否 | 页面访问信标 |
+## 核心特性
 
-## JWT 认证
+### JWT 双重认证
+- 管理接口支持 JWT Header 或 body 密码，任一有效即可
+- 角色：admin（完全权限）/ readonly（只读，分享用）
+- Token 默认 1 小时过期（`jwt.expiration` 可配）
 
-1. 前端发送 `POST /api/auth/login { "password": "..." }` 获取 Token
-2. 后续管理请求携带 `Authorization: Bearer <token>` Header
-3. JwtFilter 验证 Token，设置 `jwtValid` 属性
-4. 控制器检查 JWT 或 body 中的密码，两者任一有效即通过
-5. Token 默认 1 小时过期（`application.yml` → `jwt.expiration`）
+### IP 地理定位
+- ip2region 2.7.0，精度到省/市/运营商
+- 启动时加载 `ip2region.xdb`（~12MB），查询 0.1ms/次
+- `IpService.getClientIp()` 从 X-Forwarded-For 提取真实 IP，跳过内网地址
 
-## 访问统计
+### UA 解析
+- `UaParser.java` 服务端 UA 解析：浏览器（微信/QQ/Chrome/Edge 等 15+）、OS（Win11/Android/iOS 等）、设备类型、手机型号
+- 前端 `useVisit.js` 也用相同逻辑客户端解析
 
-访问记录由前端 `useVisit` hook 触发（每次路由切换发送 `POST /api/visit`），后端写入 `visit_logs` 表。统计数据通过 `POST /api/stats` 获取，管理后台每 15 秒自动刷新。
+### 音乐导入系统
+- 搜索：代理 xmsj.org，搜索网易云/QQ/酷狗/酷我/咪咕等 11 个平台（支持并行多平台）
+- 导入：后端自动下载封面到 `/music/`，播放地址拼接 163 外链
+- 去重：`song_id` UNIQUE，同歌曲不重复导入
+- 失效检测：`GET /api/songs/check/{id}` 检测外链是否存活
 
-## 数据库表
+### 文件管理
+- `/uploads/` — 图片上传（博客文章 + 留言）
+- `/music/`  — 音频/封面/歌词上传 + 下载
+- 公开上传：`/api/upload/public`（无需认证，限图片 5MB）
 
-```
-skills       (id, name, proficiency, desc_en, desc_zh)
-projects     (id, num, title, tags, desc_en, desc_zh, url)
-posts        (id, slug UNIQUE, title, title_zh, date, category, read_time, tags, summary, summary_zh, content_en LONGTEXT, content_zh LONGTEXT, featured BOOLEAN)
-notes        (id, content, date, type)
-friends      (id, name, desc, url)
-guestbook    (id, author, message, mood, date)
-visit_logs   (id, page, referrer, user_agent, language, screen, created_at)
+---
+
+## 环境变量
+
+```yaml
+server.port: 8080
+spring.datasource.url: jdbc:mysql://localhost:3306/blog
+spring.datasource.username: root
+spring.datasource.password: ${DB_PASSWORD}
+spring.servlet.multipart.max-file-size: 50MB
+admin.password: ${ADMIN_PASSWORD}     # 逗号分隔多密码
+jwt.secret: ${JWT_SECRET}             # 长随机字符串
+jwt.expiration: 3600000               # 1 小时（毫秒）
 ```

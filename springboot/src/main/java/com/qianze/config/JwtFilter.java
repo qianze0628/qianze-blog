@@ -23,6 +23,8 @@ public class JwtFilter implements Filter {
             String token = auth.substring(7);
             if (jwt.validate(token)) {
                 request.setAttribute("jwtValid", true);
+                String role = jwt.getRole(token);
+                if (role != null) request.setAttribute("jwtRole", role);
             }
         }
         chain.doFilter(req, res);

@@ -7,10 +7,12 @@ import java.util.List;
 
 @Mapper
 public interface GuestbookMapper {
-    @Select("SELECT id, author, message, mood, date FROM guestbook ORDER BY date DESC")
+    @Select("SELECT id, author, message, mood, ip, user_agent, browser, os, device, model, country, province, city, date FROM guestbook ORDER BY date DESC")
+    @Results({ @Result(property = "userAgent", column = "user_agent") })
     List<GuestbookEntry> findAll();
 
-    @Insert("INSERT INTO guestbook (author, message, mood, date) VALUES (#{author}, #{message}, #{mood}, #{date})")
+    @Insert("INSERT INTO guestbook (author, message, mood, ip, user_agent, browser, os, device, model, country, province, city, date) " +
+            "VALUES (#{author}, #{message}, #{mood}, #{ip}, #{userAgent}, #{browser}, #{os}, #{device}, #{model}, #{country}, #{province}, #{city}, #{date})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(GuestbookEntry entry);
 

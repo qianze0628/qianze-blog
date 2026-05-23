@@ -3,6 +3,25 @@ import { useParams } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import Header from '../components/Header'
 import { api } from '../api'
+import { getMediaUrl } from '../utils/mediaUrl'
+
+function renderContent(text) {
+  if (!text) return ''
+  // Convert markdown images ![alt](url) to <img> — normalize URL via getMediaUrl
+  let html = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, url) =>
+    `<img src="${getMediaUrl(url)}" alt="${alt}" loading="lazy" class="max-w-full rounded-xl my-6">`
+  )
+  // Split into paragraphs by double newlines
+  const paras = html.split(/\n\n+/)
+  return paras.map(p => {
+    if (!p.trim()) return ''
+    const lines = p.split('\n').map(line => {
+      if (/<img\s/.test(line)) return line
+      return line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    })
+    return '<p>' + lines.join('<br>') + '</p>'
+  }).join('')
+}
 
 export default function BlogPost() {
   const { slug } = useParams()
@@ -43,9 +62,10 @@ export default function BlogPost() {
               </div>
             )}
           </div>
-          <div className="prose dark:prose-invert max-w-none text-black dark:text-white leading-relaxed whitespace-pre-wrap text-base">
-            {content || (lang === 'en' ? post.summary : post.summaryZh)}
-          </div>
+          <div
+            className="prose dark:prose-invert max-w-none text-black dark:text-white leading-relaxed text-base [&_img]:max-w-full [&_img]:rounded-xl [&_img]:my-6"
+            dangerouslySetInnerHTML={{ __html: renderContent(content || (lang === 'en' ? post.summary : post.summaryZh)) }}
+          />
         </div>
       </article>
     </>

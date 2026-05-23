@@ -90,14 +90,43 @@ export default function Analytics({ password }) {
         </div>
       </ChartCard>
 
+      {/* Browser / OS / Device */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <ChartCard title="浏览器">
+          {stats.browserStats?.length > 0 ? stats.browserStats.map((b, i) => (
+            <div key={i} className="flex justify-between text-sm py-1"><span className="text-muted">{b.browser}</span><span className="text-black dark:text-white">{b.cnt}</span></div>
+          )) : <p className="text-xs text-muted">暂无数据</p>}
+        </ChartCard>
+        <ChartCard title="操作系统">
+          {stats.osStats?.length > 0 ? stats.osStats.map((o, i) => (
+            <div key={i} className="flex justify-between text-sm py-1"><span className="text-muted">{o.os}</span><span className="text-black dark:text-white">{o.cnt}</span></div>
+          )) : <p className="text-xs text-muted">暂无数据</p>}
+        </ChartCard>
+        <ChartCard title="设备类型">
+          {stats.deviceStats?.length > 0 ? stats.deviceStats.map((d, i) => (
+            <div key={i} className="flex justify-between text-sm py-1"><span className="text-muted">{d.device}</span><span className="text-black dark:text-white">{d.cnt}</span></div>
+          )) : <p className="text-xs text-muted">暂无数据</p>}
+        </ChartCard>
+      </div>
+
       {/* Recent Visits */}
       <ChartCard title="实时访问动态">
-        <div className="space-y-1 max-h-64 overflow-y-auto">
-          {stats.recent?.slice(0, 20).map((r, i) => (
-            <div key={i} className="flex justify-between text-xs py-1.5 border-b border-black/5 dark:border-white/5 last:border-0">
-              <span className="text-muted">{r.page || '/'}</span>
-              <span className="text-muted">{r.userAgent?.substring(0, 50)}</span>
-              <span className="text-muted font-mono">{(r.createdAt || '').substring(11, 19)}</span>
+        <div className="space-y-1 max-h-72 overflow-y-auto text-xs">
+          {stats.recent?.slice(0, 30).map((r, i) => (
+            <div key={i} className="flex flex-wrap justify-between py-1.5 border-b border-black/5 dark:border-white/5 last:border-0 gap-x-3">
+              <span className="text-muted truncate max-w-[160px]">{r.page || '/'}</span>
+              <span className="text-muted/60">
+                {r.ip}
+                {[r.country, r.province, r.city].filter(Boolean).length > 0 && (
+                  <span> · {[r.country, r.province, r.city].filter(Boolean).join(' ')}</span>
+                )}
+                {r.isp ? ` [${r.isp}]` : ''}
+                {r.browser && r.browser !== '其他' ? ` · ${r.browser}` : ''}
+                {r.os && r.os !== '其他' && r.os !== '未知' ? ` · ${r.os}` : ''}
+                {r.device && r.device !== '桌面端' ? ` · ${r.device}` : ''}
+                {r.model ? ` · ${r.model}` : ''}
+              </span>
+              <span className="text-muted font-mono shrink-0">{(r.createdAt || '').substring(11, 19)}</span>
             </div>
           ))}
         </div>
