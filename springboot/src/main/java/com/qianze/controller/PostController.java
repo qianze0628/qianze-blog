@@ -9,6 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,13 +21,35 @@ import java.util.Map;
 public class PostController {
     private final PostService service;
     private final String password;
+    private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
 
     public PostController(PostService service, @Value("${admin.password}") String password) {
         this.service = service; this.password = password;
     }
 
     @GetMapping
-    public List<Post> getAll() { return service.findAll(); }
+    public List<Map<String, Object>> getAll() {
+        return service.findAll().stream().map(p -> {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", p.getId());
+            m.put("slug", p.getSlug());
+            m.put("title", p.getTitle());
+            m.put("titleZh", p.getTitleZh());
+            m.put("date", p.getDate() != null ? p.getDate().format(DT_FMT) : null);
+            m.put("category", p.getCategory());
+            m.put("readTime", p.getReadTime());
+            m.put("tags", p.getTags());
+            m.put("summary", p.getSummary());
+            m.put("summaryZh", p.getSummaryZh());
+            m.put("contentEn", p.getContentEn());
+            m.put("contentZh", p.getContentZh());
+            m.put("featured", p.getFeatured());
+            m.put("cover", p.getCover());
+            m.put("isDraft", p.getIsDraft());
+            m.put("scheduledPublishAt", p.getScheduledPublishAt() != null ? p.getScheduledPublishAt().format(DT_FMT) : null);
+            return m;
+        }).toList();
+    }
 
     @GetMapping("/{slug}")
     public ResponseEntity<?> getBySlug(@PathVariable String slug) {
@@ -53,6 +79,9 @@ public class PostController {
                 p.setContentEn(str(m, "contentEn"));
                 p.setContentZh(str(m, "contentZh"));
                 p.setFeatured(m.get("featured") instanceof Boolean b ? b : false);
+                p.setCover(str(m, "cover"));
+                p.setIsDraft(m.get("isDraft") instanceof Boolean b ? b : false);
+                p.setScheduledPublishAt(parseDateTime(str(m, "scheduledPublishAt")));
                 return p;
             }).toList();
             service.replaceAll(posts);
@@ -67,8 +96,27 @@ public class PostController {
         return v != null ? v.toString() : null;
     }
 
-    private LocalDate parseDate(String d) {
-        if (d == null || d.isBlank()) return LocalDate.now();
-        try { return LocalDate.parse(d); } catch (Exception e) { return LocalDate.now(); }
+    private LocalDateTime parseDate(String d) {
+        if (d == null || d.isBlank()) return LocalDateTime.now();
+        try {
+            // 尝试完整日期时间解析
+            return LocalDateTime.parse(d, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        } catch (DateTimeParseException e1) {
+            try {
+                // 兼容只有日期的格式 "2026-07-14"
+                return LocalDate.parse(d, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
+            } catch (DateTimeParseException e2) {
+                return LocalDateTime.now();
+            }
+        }
+    }
+
+    private LocalDateTime parseDateTime(String s) {
+        if (s == null || s.isBlank()) return null;
+        try {
+            return LocalDateTime.parse(s, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
     }
 }

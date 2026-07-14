@@ -21,14 +21,18 @@ CREATE TABLE IF NOT EXISTS posts (
     slug VARCHAR(100) UNIQUE,
     title VARCHAR(300) NOT NULL,
     title_zh VARCHAR(300),
-    date DATE,
+    date DATETIME,
     category VARCHAR(50),
     read_time INT DEFAULT 5,
     tags VARCHAR(500),
     summary TEXT,
     summary_zh TEXT,
     content_en LONGTEXT,
-    content_zh LONGTEXT
+    content_zh LONGTEXT,
+    featured BOOLEAN DEFAULT FALSE,
+    cover VARCHAR(1000),
+    is_draft BOOLEAN DEFAULT FALSE,
+    scheduled_publish_at DATETIME
 );
 
 CREATE TABLE IF NOT EXISTS notes (

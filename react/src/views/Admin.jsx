@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api, setToken, getToken } from '../api'
 import { useTheme } from '../context/ThemeContext'
+import { marked } from 'marked'
 import { getMediaUrl, normalizeUploadUrl } from '../utils/mediaUrl'
 import Analytics from './Analytics'
 
@@ -23,7 +24,7 @@ export default function Admin() {
   const [password, setPassword] = useState('')
   const [authed, setAuthed] = useState(false)
   const [checking, setChecking] = useState(true)
-  const [role, setRole] = useState('admin')
+  const [role, setRole] = useState('ad分钟')
   const [tab, setTab] = useState('skills')
   const [saving, setSaving] = useState(false)
   const [shareUrl, setShareUrl] = useState('')
@@ -64,7 +65,7 @@ export default function Admin() {
     setGenerating(true)
     try {
       const res = await api.shareToken(password, shareDays)
-      const url = `${window.location.origin}/admin?token=${res.token}`
+      const url = `${window.lo分类ion.origin}/ad分钟?token=${res.token}`
       setShareUrl(url)
     } catch { /* ignore */ }
     setGenerating(false)
@@ -106,11 +107,11 @@ export default function Admin() {
     api.getSongs().then(set('songs'))
   }}, [authed])
 
-  if (checking) return <div className="min-h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#050505]"><p className="text-sm text-muted">验证登录状态...</p></div>
-  if (!authed) return <Login onLogin={(pw) => { setPassword(pw); setRole('admin'); setAuthed(true) }} />
+  if (checking) return <div className="分钟-h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#050505]"><p className="text-sm text-muted">验证登录状态...</p></div>
+  if (!authed) return <Login onLogin={(pw) => { setPassword(pw); setRole('ad分钟'); setAuthed(true) }} />
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505]">
+    <div className="分钟-h-screen bg-[#fafafa] dark:bg-[#050505]">
       {/* 顶栏 */}
       <div className="sticky top-0 z-40 bg-[#fafafa]/90 dark:bg-[#050505]/90 backdrop-blur border-b border-black/5 dark:border-white/5 px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -137,7 +138,7 @@ export default function Admin() {
               {saving ? '保存中...' : '保存修改'}
             </button>
           )}
-          <button onClick={() => { setToken(null); setAuthed(false); setPassword(''); setRole('admin') }}
+          <button onClick={() => { setToken(null); setAuthed(false); setPassword(''); setRole('ad分钟') }}
             className="text-sm text-muted hover:text-red-500 dark:hover:text-red-400 transition-colors"
             title="退出登录">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -245,7 +246,7 @@ function Login({ onLogin }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#050505]">
+    <div className="分钟-h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#050505]">
       <form onSubmit={submit} className="w-80">
         <h1 className="text-2xl font-bold text-black dark:text-white mb-2 text-center">管理后台</h1>
         <p className="text-sm text-muted text-center mb-8">请输入密码以继续</p>
@@ -273,10 +274,10 @@ function AddBar({ onClick, label }) {
 }
 
 // ── 卡片容器 ──
-function Card({ children, onDelete, readonly, onConfirm, confirmTitle }) {
+function Card({ children, onDelete, readonly, onConfirm, confirm文章标题 }) {
   const handleDelete = () => {
     if (onConfirm) {
-      onConfirm(confirmTitle || '确定要删除该项吗？', onDelete)
+      onConfirm(confirm文章标题 || '确定要删除该项吗？', onDelete)
     } else {
       onDelete()
     }
@@ -299,15 +300,23 @@ function Input({ value, onChange, placeholder, type, className = '', readOnly })
     placeholder={placeholder} className={`border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm bg-transparent text-black dark:text-white placeholder:text-muted/50 outline-none focus:border-black dark:focus:border-white ${readOnly ? 'opacity-60 cursor-default' : ''} ${className}`} />
 }
 
-function Textarea({ value, onChange, placeholder, rows, readOnly }) {
-  return <textarea value={value ?? ''} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows || 3} readOnly={readOnly}
+function Textarea({ value, onChange, placeholder, rows, readOnly, textareaRef }) {
+  return <textarea ref={textareaRef} value={value ?? ''} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows || 3} readOnly={readOnly}
     className={`w-full border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm bg-transparent text-black dark:text-white placeholder:text-muted/50 outline-none focus:border-black dark:focus:border-white resize-none ${readOnly ? 'opacity-60 cursor-default' : ''}`} />
 }
 
 // ── 技能编辑 ──
 function SkillEditor({ data, setData, readonly, onConfirm }) {
+  const [contentLang, setContentLang] = useState("en")
   const add = () => setData([...data, { name: '', proficiency: 50, descEn: '', descZh: '' }])
   const update = (i, k) => v => { const n = [...data]; n[i] = { ...n[i], [k]: v }; setData(n) }
+  // Auto-save 草稿s to localStorage
+  useEffect(() => {
+    if (data.length > 0) {
+      const 草稿s = data.filter(p => p.isDraft)
+      localStorage.setItem('blog_草稿s', JSON.stringify(草稿s))
+    }
+  }, [data])
   return <>
     {data.map((s, i) => (
       <Card key={i} onDelete={() => setData(data.filter((_, j) => j !== i))} readonly={readonly} onConfirm={onConfirm}>
@@ -330,6 +339,13 @@ function SkillEditor({ data, setData, readonly, onConfirm }) {
 function ProjectEditor({ data, setData, readonly, onConfirm }) {
   const add = () => setData([...data, { num: '/0' + (data.length + 1), title: '', tags: [], descEn: '', descZh: '', url: '' }])
   const update = (i, k) => v => { const n = [...data]; n[i] = { ...n[i], [k]: v }; setData(n) }
+  // Auto-save 草稿s to localStorage
+  useEffect(() => {
+    if (data.length > 0) {
+      const 草稿s = data.filter(p => p.isDraft)
+      localStorage.setItem('blog_草稿s', JSON.stringify(草稿s))
+    }
+  }, [data])
   return <>
     {data.map((p, i) => (
       <Card key={i} onDelete={() => setData(data.filter((_, j) => j !== i))} readonly={readonly} onConfirm={onConfirm}>
@@ -352,74 +368,392 @@ function ProjectEditor({ data, setData, readonly, onConfirm }) {
 
 // ── 文章编辑 ──
 function PostEditor({ data, setData, readonly, onConfirm }) {
-  const add = () => setData([...data, { slug: '', title: '', titleZh: '', date: new Date().toISOString().slice(0, 10), category: '', readTime: 5, tags: [], summary: '', summaryZh: '', contentEn: '', contentZh: '', featured: false }])
+  const [draftPrompt, setDraftPrompt] = useState(false)
+  const [draftData, setDraftData] = useState(null)
+  const saveTimerRef = useRef(null)
+
+  const add = () => setData([...data, {
+    slug: "", title: "", titleZh: "",
+    date: new Date().toISOString().slice(0, 16),
+    category: "", readTime: 5, tags: [],
+    summary: "", summaryZh: "",
+    contentEn: "", contentZh: "",
+    featured: false, cover: "",
+    isDraft: true, scheduledPublishAt: ""
+  }])
   const update = (i, k) => v => { const n = [...data]; n[i] = { ...n[i], [k]: v }; setData(n) }
-  return <>
-    {data.map((p, i) => (
-      <Card key={i} onDelete={() => setData(data.filter((_, j) => j !== i))} readonly={readonly} onConfirm={onConfirm}>
-        <div className="flex gap-3 mb-3 flex-wrap">
-          <Input value={p.slug} onChange={update(i, 'slug')} placeholder="URL 标识" className="w-44" readOnly={readonly} />
-          <Input value={p.date} onChange={update(i, 'date')} placeholder="日期" className="w-32" readOnly={readonly} />
-          <Input value={p.category} onChange={update(i, 'category')} placeholder="分类" className="w-24" readOnly={readonly} />
-          <Input value={p.readTime} onChange={update(i, 'readTime')} type="number" placeholder="分钟" className="w-20" readOnly={readonly} />
-        </div>
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs text-muted">英文标题</span>
-          {!readonly && <TranslateBtn text={p.titleZh} onResult={v => update(i, 'title')(v)} />}
-        </div>
-        <Input value={p.title} onChange={update(i, 'title')} placeholder="English title" className="w-full mb-2" readOnly={readonly} />
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs text-muted">中文标题</span>
-          {!readonly && <TranslateBtn text={p.title} onResult={v => update(i, 'titleZh')(v)} />}
-        </div>
-        <Input value={p.titleZh} onChange={update(i, 'titleZh')} placeholder="中文标题" className="w-full mb-2" readOnly={readonly} />
-        <Input value={Array.isArray(p.tags) ? p.tags.join(', ') : (p.tags || '')}
-          onChange={v => update(i, 'tags')(v.split(',').map(t => t.trim()))} placeholder="标签（逗号分隔）" className="w-full mb-2" readOnly={readonly} />
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs text-muted">英文摘要</span>
-          {!readonly && <TranslateBtn text={p.summaryZh} onResult={v => update(i, 'summary')(v)} />}
-        </div>
-        <Input value={p.summary} onChange={update(i, 'summary')} placeholder="English summary" className="w-full mb-2" readOnly={readonly} />
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs text-muted">中文摘要</span>
-          {!readonly && <TranslateBtn text={p.summary} onResult={v => update(i, 'summaryZh')(v)} />}
-        </div>
-        <Input value={p.summaryZh} onChange={update(i, 'summaryZh')} placeholder="中文摘要" className="w-full mb-2" readOnly={readonly} />
-        {!readonly && (
-          <label className="flex items-center gap-2 text-sm text-muted mb-3 cursor-pointer">
-            <input type="checkbox" checked={p.featured || false} onChange={e => update(i, 'featured')(e.target.checked)}
-              className="w-4 h-4 rounded border-black/20 dark:border-white/20" />
-            设为精选文章（首页展示）
-          </label>
-        )}
-        <div className="flex items-center justify-between mt-3 mb-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted">英文正文</span>
-            {!readonly && <TranslateBtn text={p.contentZh} onResult={v => update(i, 'contentEn')(v)} />}
+
+  // ── 自动保存草稿（debounced 2秒）──
+  useEffect(() => {
+    clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = setTimeout(() => {
+      const drafts = data.filter(p => p.isDraft)
+      if (drafts.length > 0) {
+        localStorage.setItem('blog_post_drafts', JSON.stringify(drafts))
+      } else {
+        localStorage.removeItem('blog_post_drafts')
+      }
+    }, 2000)
+    return () => clearTimeout(saveTimerRef.current)
+  }, [data])
+
+  // ── 恢复草稿提示 ──
+  useEffect(() => {
+    const saved = localStorage.getItem('blog_post_drafts')
+    if (saved) {
+      try {
+        const drafts = JSON.parse(saved)
+        if (Array.isArray(drafts) && drafts.length > 0) {
+          setDraftData(drafts)
+          setDraftPrompt(true)
+        }
+      } catch { /* ignore */ }
+    }
+  }, [])
+
+  const recoverDrafts = () => {
+    if (draftData) {
+      // 合并草稿：用 slug 去重，已有同 slug 的跳过
+      const existingSlugs = new Set(data.map(p => p.slug))
+      const toAdd = draftData.filter(p => !existingSlugs.has(p.slug))
+      if (toAdd.length > 0) setData([...data, ...toAdd])
+    }
+    localStorage.removeItem('blog_post_drafts')
+    setDraftPrompt(false)
+    setDraftData(null)
+  }
+
+  return (
+    <>
+      {/* 草稿恢复提示条 */}
+      {draftPrompt && (
+        <div className="border border-amber-300/50 dark:border-amber-700/30 rounded-xl p-4 mb-4 bg-amber-50/30 dark:bg-amber-900/10 flex items-center justify-between">
+          <span className="text-sm text-amber-700 dark:text-amber-400">检测到未保存的草稿，是否恢复？</span>
+          <div className="flex gap-2 shrink-0">
+            <button onClick={recoverDrafts}
+              className="text-xs bg-amber-500 text-white px-3 py-1.5 rounded-full hover:bg-amber-600 transition-colors">恢复</button>
+            <button onClick={() => setDraftPrompt(false)}
+              className="text-xs text-muted border border-black/20 dark:border-white/20 px-3 py-1.5 rounded-full hover:text-black dark:hover:text-white transition-all">忽略</button>
           </div>
-          {!readonly && <FileUploadBtn accept="image/*" label="📷 上传图片" onUrl={url => update(i, 'contentEn')((p.contentEn || '') + `\n![图片](${url})\n`)} />}
         </div>
-        <Textarea value={p.contentEn} onChange={update(i, 'contentEn')} placeholder="English content" rows={6} readOnly={readonly} />
-        <ImagePreview text={p.contentEn} />
-        <div className="flex items-center justify-between mt-2 mb-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted">中文正文</span>
-            {!readonly && <TranslateBtn text={p.contentEn} onResult={v => update(i, 'contentZh')(v)} />}
-          </div>
-          {!readonly && <FileUploadBtn accept="image/*" label="📷 上传图片" onUrl={url => update(i, 'contentZh')((p.contentZh || '') + `\n![图片](${url})\n`)} />}
-        </div>
-        <Textarea value={p.contentZh} onChange={update(i, 'contentZh')} placeholder="中文正文" rows={6} readOnly={readonly} />
-        <ImagePreview text={p.contentZh} />
-      </Card>
-    ))}
-    {!readonly && <AddBar onClick={add} label="添加文章" />}
-  </>
+      )}
+
+      {data.map((p, i) => (
+        <PostCard key={i} p={p} i={i} update={update} readonly={readonly}
+          onDelete={() => setData(data.filter((_, j) => j !== i))} onConfirm={onConfirm} />
+      ))}
+      {!readonly && <AddBar onClick={add} label="添加文章" />}
+    </>
+  )
 }
 
-// ── 碎念编辑 ──
+// ── 日期格式化为 datetime-local 兼容格式 ──
+function formatDateTime(val) {
+  if (!val) return ''
+  const s = String(val)
+  // 已是 "yyyy-MM-ddTHH:mm" 格式，直接返回
+  if (s.includes('T') && s.length >= 16) return s.substring(0, 16)
+  // 纯日期格式 "yyyy-MM-dd"，补 T00:00
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s + 'T00:00'
+  // 其他格式截断到16字符
+  return s.substring(0, 16)
+}
+
+// ── 单篇文章卡片（提取为独立组件以管理 mode/textareaRef 状态）──
+function PostCard({ p, i, update, readonly, onDelete, onConfirm }) {
+  const [mode, setMode] = useState('edit')
+  const enRef = useRef(null)
+  const zhRef = useRef(null)
+
+  // ── Markdown 预览渲染 ──
+  function renderPreview(text) {
+    if (!text) return ''
+    return marked.parse(text)
+  }
+
+  // ── 插入图片到光标位置 ──
+  const insertImage = async (lang) => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.onchange = async (e) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+      try {
+        const res = await api.uploadFile(file)
+        const url = normalizeUploadUrl(res.url)
+        const textarea = lang === 'en' ? enRef.current : zhRef.current
+        if (textarea) {
+          const start = textarea.selectionStart
+          const end = textarea.selectionEnd
+          const field = lang === 'en' ? 'contentEn' : 'contentZh'
+          const before = (p[field] || '').slice(0, start)
+          const after = (p[field] || '').slice(end)
+          update(i, field)(before + `![图片](${url})` + after)
+        }
+      } catch (err) {
+        alert('图片上传失败: ' + (err.message || '未知错误'))
+      }
+    }
+    input.click()
+  }
+
+  // ── 拖拽 .md 文件解析 ──
+  const [dragOver, setDragOver] = useState(false)
+  const handleDragOver = (e) => { e.preventDefault(); setDragOver(true) }
+  const handleDragLeave = () => setDragOver(false)
+  const handleDrop = (e) => {
+    e.preventDefault()
+    setDragOver(false)
+    const file = e.dataTransfer.files?.[0]
+    if (!file || !file.name.endsWith('.md')) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const text = ev.target.result
+      const { meta, body } = parseFrontmatter(text)
+      if (meta.title) update(i, 'title')(meta.title)
+      if (meta.date) update(i, 'date')(meta.date)
+      if (meta.tags) {
+        const tags = Array.isArray(meta.tags) ? meta.tags : meta.tags.split(',').map(t => t.trim())
+        update(i, 'tags')(tags)
+      }
+      if (meta.summary || meta.description || meta.excerpt) update(i, 'summary')(meta.summary || meta.description || meta.excerpt)
+      if (meta.category || meta.categories) update(i, 'category')(meta.category || meta.categories)
+      if (meta.slug || meta.permalink) update(i, 'slug')(meta.slug || meta.permalink)
+      if (meta.readTime || meta.read_time || meta.minutes) {
+        const rt = Number(meta.readTime || meta.read_time || meta.minutes)
+        if (!isNaN(rt)) update(i, 'readTime')(rt)
+      }
+      if (meta.cover || meta.image || meta.thumbnail) update(i, 'cover')(meta.cover || meta.image || meta.thumbnail)
+      if (meta.featured !== undefined) update(i, 'featured')(meta.featured === true || meta.featured === 'true')
+      if (meta.draft !== undefined) update(i, 'isDraft')(meta.draft === true || meta.draft === 'true')
+      if (body) update(i, 'contentEn')(body)
+    }
+    reader.readAsText(file)
+  }
+
+  return (
+    <div
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+    <Card onDelete={onDelete} readonly={readonly} onConfirm={onConfirm} confirmTitle="确定删除这篇文章吗？">
+      {/* ── 状态标签：草稿 / 已发布 ── */}
+      <div className="flex gap-1 mb-4">
+        <button onClick={() => { update(i, 'isDraft')(true) }}
+          className={`px-3 py-1 text-xs rounded-full transition-all ${
+            p.isDraft
+              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-300/50 dark:border-amber-700/30'
+              : 'text-muted border border-black/20 dark:border-white/20 hover:border-amber-300/50 dark:hover:border-amber-700/30'
+          }`}>
+          草稿
+        </button>
+        <button onClick={() => { update(i, 'isDraft')(false); update(i, 'scheduledPublishAt')('') }}
+          className={`px-3 py-1 text-xs rounded-full transition-all ${
+            !p.isDraft
+              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-300/50 dark:border-green-700/30'
+              : 'text-muted border border-black/20 dark:border-white/20 hover:border-green-300/50 dark:hover:border-green-700/30'
+          }`}>
+          已发布
+        </button>
+      </div>
+
+      {/* ── 元信息行 ── */}
+      <div className="flex gap-3 mb-3 flex-wrap">
+        <Input value={p.slug} onChange={update(i, "slug")} placeholder="slug" className="w-36" readOnly={readonly} />
+        <Input value={formatDateTime(p.date)} onChange={update(i, "date")} type="datetime-local" className="w-48" readOnly={readonly} />
+        <Input value={p.category} onChange={update(i, "category")} placeholder="分类" className="w-24" readOnly={readonly} />
+        <Input value={p.readTime} onChange={update(i, "readTime")} type="number" placeholder="阅读(分钟)" className="w-28" readOnly={readonly} />
+        {/* 精选 */}
+        <label className="flex items-center gap-1.5 cursor-pointer">
+          <input type="checkbox" checked={!!p.featured} onChange={e => update(i, 'featured')(e.target.checked)}
+            disabled={readonly} className="accent-black dark:accent-white" />
+          <span className="text-xs text-muted">精选</span>
+        </label>
+      </div>
+
+      {/* ── 标题 ── */}
+      <Input value={p.title} onChange={update(i, "title")} placeholder="英文标题" className="w-full mb-2" readOnly={readonly} />
+      <Input value={p.titleZh || ""} onChange={update(i, "titleZh")} placeholder="中文标题" className="w-full mb-2" readOnly={readonly} />
+
+      {/* ── 标签 / 摘要 ── */}
+      <Input value={Array.isArray(p.tags) ? p.tags.join(", ") : (p.tags || "")}
+        onChange={v => update(i, "tags")(v.split(",").map(t => t.trim()).filter(Boolean))}
+        placeholder="标签（逗号分隔）" className="w-full mb-2" readOnly={readonly} />
+      <Input value={p.summary} onChange={update(i, "summary")} placeholder="英文摘要" className="w-full mb-2" readOnly={readonly} />
+      <Input value={p.summaryZh || ""} onChange={update(i, "summaryZh")} placeholder="中文摘要" className="w-full mb-2" readOnly={readonly} />
+
+      {/* ── 封面图 ── */}
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-xs text-muted shrink-0">封面图</span>
+        <Input value={p.cover || ''} onChange={update(i, 'cover')}
+          placeholder="图片URL 或点击上传" className="flex-1" readOnly={readonly} />
+        {!readonly && (
+          <CoverUploadBtn onUrl={url => update(i, 'cover')(url)} />
+        )}
+      </div>
+      {p.cover && (
+        <img src={getMediaUrl(p.cover)} alt="封面预览"
+          className="w-32 h-20 rounded-lg object-cover border border-black/10 dark:border-white/10 mb-3" />
+      )}
+
+      {/* ── 定时发布 ── */}
+      <div className="flex items-center gap-2 mb-3">
+        <label className="flex items-center gap-1.5 cursor-pointer">
+          <input type="checkbox" checked={!!p.scheduledPublishAt}
+            onChange={e => {
+              if (e.target.checked) {
+                // 默认设为明天此时
+                const tomorrow = new Date(Date.now() + 86400000)
+                update(i, 'scheduledPublishAt')(tomorrow.toISOString().slice(0, 16))
+              } else {
+                update(i, 'scheduledPublishAt')('')
+              }
+            }}
+            disabled={readonly} className="accent-black dark:accent-white" />
+          <span className="text-xs text-muted">定时发布</span>
+        </label>
+        {p.scheduledPublishAt && (
+          <Input value={formatDateTime(p.scheduledPublishAt)} onChange={update(i, 'scheduledPublishAt')} type="datetime-local" className="w-48" readOnly={readonly} />
+        )}
+      </div>
+
+      {/* ── 正文编辑区 ── */}
+      <div className={`border rounded-xl p-3 transition-colors ${dragOver ? 'border-amber-400 dark:border-amber-500 bg-amber-50/50 dark:bg-amber-900/20' : 'border-black/5 dark:border-white/5'}`}>
+        {/* 工具栏 */}
+        <div className="flex items-center gap-2 mb-3">
+          {/* 编辑/预览切换 */}
+          <div className="flex gap-1 bg-black/5 dark:bg-white/5 rounded-full p-0.5">
+            <button onClick={() => setMode('edit')}
+              className={`px-3 py-1 text-xs rounded-full transition-all ${mode === 'edit' ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-muted hover:text-black dark:hover:text-white'}`}>
+              编辑
+            </button>
+            <button onClick={() => setMode('preview')}
+              className={`px-3 py-1 text-xs rounded-full transition-all ${mode === 'preview' ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-muted hover:text-black dark:hover:text-white'}`}>
+              预览
+            </button>
+          </div>
+          {mode === 'edit' && !readonly && (
+            <>
+              <span className="text-muted/30">|</span>
+              <button onClick={() => insertImage('en')}
+                className="text-xs text-muted hover:text-black dark:hover:text-white transition-colors">
+                📷 英文插图
+              </button>
+              <button onClick={() => insertImage('zh')}
+                className="text-xs text-muted hover:text-black dark:hover:text-white transition-colors">
+                📷 中文插图
+              </button>
+            </>
+          )}
+          <span className="text-xs text-muted/40 ml-auto">可拖拽 .md 文件</span>
+        </div>
+
+        {/* 正文内容 */}
+        {mode === 'edit' ? (
+          <div className="flex gap-2">
+            <Textarea value={p.contentEn || ''} onChange={update(i, "contentEn")}
+              placeholder="英文 Markdown" rows={12} readOnly={readonly}
+              textareaRef={enRef} />
+            <Textarea value={p.contentZh || ''} onChange={update(i, "contentZh")}
+              placeholder="中文 Markdown" rows={12} readOnly={readonly}
+              textareaRef={zhRef} />
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <div className="w-1/2 prose dark:prose-invert max-w-none text-sm text-black dark:text-white
+              [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-3
+              [&_pre]:rounded-lg [&_pre]:p-4 [&_pre]:bg-[#f6f8fa] dark:[&_pre]:bg-[#0d1117]
+              [&_code]:text-xs [&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base
+              [&_blockquote]:border-l-2 [&_blockquote]:border-black/20 dark:[&_blockquote]:border-white/20 [&_blockquote]:pl-4 [&_blockquote]:text-muted"
+              dangerouslySetInnerHTML={{ __html: renderPreview(p.contentEn) }} />
+            <div className="w-1/2 prose dark:prose-invert max-w-none text-sm text-black dark:text-white
+              [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-3
+              [&_pre]:rounded-lg [&_pre]:p-4 [&_pre]:bg-[#f6f8fa] dark:[&_pre]:bg-[#0d1117]
+              [&_code]:text-xs [&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base
+              [&_blockquote]:border-l-2 [&_blockquote]:border-black/20 dark:[&_blockquote]:border-white/20 [&_blockquote]:pl-4 [&_blockquote]:text-muted"
+              dangerouslySetInnerHTML={{ __html: renderPreview(p.contentZh) }} />
+          </div>
+        )}
+      </div>
+    </Card>
+    </div>
+  )
+}
+
+// ── 封面上传按钮（独立的 button 触发文件选择）──
+function CoverUploadBtn({ onUrl }) {
+  const [uploading, setUploading] = useState(false)
+  const inputRef = useRef(null)
+
+  const handleClick = () => {
+    if (inputRef.current) inputRef.current.click()
+  }
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const res = await api.uploadFile(file)
+      onUrl(normalizeUploadUrl(res.url))
+    } catch (err) {
+      alert('上传失败: ' + (err.message || '未知错误'))
+    }
+    setUploading(false)
+    e.target.value = ''
+  }
+
+  return (
+    <>
+      <button type="button" onClick={handleClick} disabled={uploading}
+        className={`text-xs transition-colors shrink-0 ${uploading ? 'text-muted/40 cursor-wait' : 'text-muted hover:text-black dark:hover:text-white cursor-pointer'}`}>
+        {uploading ? '上传中...' : '📷 上传'}
+      </button>
+      <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
+    </>
+  )
+}
+
+// ── Markdown frontmatter 解析 ──
+function parseFrontmatter(mdText) {
+  const match = mdText.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/)
+  if (!match) return { meta: {}, body: mdText }
+  const metaBlock = match[1]
+  const body = match[2]
+  const meta = {}
+  metaBlock.split('\n').forEach(line => {
+    const idx = line.indexOf(':')
+    if (idx > 0) {
+      const key = line.slice(0, idx).trim()
+      let value = line.slice(idx + 1).trim()
+      // 处理引号包裹
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1)
+      }
+      // 处理数组 [a, b, c]
+      if (value.startsWith('[') && value.endsWith(']')) {
+        value = value.slice(1, -1).split(',').map(s => s.trim()).map(s => s.replace(/^['"]|['"]$/g, ''))
+      }
+      // 处理布尔值
+      if (value === 'true') value = true
+      else if (value === 'false') value = false
+      meta[key] = value
+    }
+  })
+  return { meta, body }
+}
 function NoteEditor({ data, setData, readonly, onConfirm }) {
   const add = () => setData([...data, { content: '', date: new Date().toISOString().slice(0, 10), type: 'text' }])
   const update = (i, k) => v => { const n = [...data]; n[i] = { ...n[i], [k]: v }; setData(n) }
+  // Auto-save 草稿s to localStorage
+  useEffect(() => {
+    if (data.length > 0) {
+      const 草稿s = data.filter(p => p.isDraft)
+      localStorage.setItem('blog_草稿s', JSON.stringify(草稿s))
+    }
+  }, [data])
   return <>
     {data.map((n, i) => (
       <Card key={i} onDelete={() => setData(data.filter((_, j) => j !== i))} readonly={readonly} onConfirm={onConfirm}>
@@ -441,6 +775,13 @@ function NoteEditor({ data, setData, readonly, onConfirm }) {
 function FriendEditor({ data, setData, readonly, onConfirm }) {
   const add = () => setData([...data, { name: '', desc: '', url: 'https://' }])
   const update = (i, k) => v => { const n = [...data]; n[i] = { ...n[i], [k]: v }; setData(n) }
+  // Auto-save 草稿s to localStorage
+  useEffect(() => {
+    if (data.length > 0) {
+      const 草稿s = data.filter(p => p.isDraft)
+      localStorage.setItem('blog_草稿s', JSON.stringify(草稿s))
+    }
+  }, [data])
   return <>
     {data.map((f, i) => (
       <Card key={i} onDelete={() => setData(data.filter((_, j) => j !== i))} readonly={readonly} onConfirm={onConfirm}>
@@ -476,7 +817,7 @@ function GuestbookList({ data, setData, readonly, onConfirm }) {
     <div className="space-y-3">
       {[...data].reverse().map(e => (
         <div key={e.id} className="border border-black/5 dark:border-white/5 rounded-2xl p-5 bg-white dark:bg-black flex items-start justify-between group hover:border-black/10 dark:hover:border-white/10 transition-colors">
-          <div className="min-w-0 flex-1">
+          <div className="分钟-w-0 flex-1">
             <div className="text-sm text-black dark:text-white leading-relaxed break-words">
               <RichMessage text={e.message} />
             </div>
@@ -661,9 +1002,9 @@ function MusicImporter({ onImported }) {
                     <div className="w-full h-full flex items-center justify-center text-amber-400"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></div>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-black dark:text-white truncate">{r.title}</p>
-                  <p className="text-xs text-muted truncate">
+                <div className="flex-1 分钟-w-0">
+                  <p className="text-sm text-black dark:text-white trun分类e">{r.title}</p>
+                  <p className="text-xs text-muted trun分类e">
                     <span className="text-amber-500">gequhai</span>
                     {' · '}{r.artist}{r.songId ? ` · #${r.songId}` : ''}{r.mp3Id ? ` · mp3:${r.mp3Id}` : ''}
                   </p>
@@ -690,6 +1031,13 @@ function MusicImporter({ onImported }) {
 function SongEditor({ data, setData, readonly, onConfirm }) {
   const add = () => setData([...data, { title: '', artist: '', album: '', url: '', cover: '', lyricUrl: '', duration: 0, sourceType: 'external', sortOrder: 0 }])
   const update = (i, k) => v => { const n = [...data]; n[i] = { ...n[i], [k]: v }; setData(n) }
+  // Auto-save 草稿s to localStorage
+  useEffect(() => {
+    if (data.length > 0) {
+      const 草稿s = data.filter(p => p.isDraft)
+      localStorage.setItem('blog_草稿s', JSON.stringify(草稿s))
+    }
+  }, [data])
   const saveSong = async (i) => {
     const s = data[i]
     const payload = { title: s.title, artist: s.artist, album: s.album, url: s.url, cover: s.cover, lyricUrl: s.lyricUrl, duration: s.duration || 0, sourceType: s.sourceType || 'external', sortOrder: s.sortOrder || 0 }
@@ -713,9 +1061,9 @@ function SongEditor({ data, setData, readonly, onConfirm }) {
   return <>
     {!readonly && <MusicImporter onImported={onImported} />}
     {data.map((s, i) => (
-      <Card key={i} onDelete={() => { api.deleteSong(s.id).catch(() => {}); setData(data.filter((_, j) => j !== i)) }} readonly={readonly} onConfirm={onConfirm} confirmTitle={`确定删除「${s.title}」吗？`}>
+      <Card key={i} onDelete={() => { api.deleteSong(s.id).catch(() => {}); setData(data.filter((_, j) => j !== i)) }} readonly={readonly} onConfirm={onConfirm} confirm文章标题={`确定删除「${s.title}」吗？`}>
         <div className="flex gap-3 mb-2 flex-wrap">
-          <Input value={s.title} onChange={update(i, 'title')} placeholder="歌曲名" className="flex-1 min-w-[120px]" readOnly={readonly} />
+          <Input value={s.title} onChange={update(i, 'title')} placeholder="歌曲名" className="flex-1 分钟-w-[120px]" readOnly={readonly} />
           <Input value={s.artist} onChange={update(i, 'artist')} placeholder="歌手" className="w-28" readOnly={readonly} />
           <Input value={s.album} onChange={update(i, 'album')} placeholder="专辑" className="w-28" readOnly={readonly} />
           <Input value={s.sortOrder} onChange={update(i, 'sortOrder')} type="number" placeholder="排序" className="w-14" readOnly={readonly} />
@@ -788,12 +1136,12 @@ function MusicLogsView() {
           <div className="space-y-1">
             {ranked.slice(0, 10).map((s, i) => (
               <div key={s.id || i} className="flex items-center justify-between py-1.5 text-sm">
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center gap-3 分钟-w-0">
                   <span className={`text-xs font-mono w-5 shrink-0 ${i < 3 ? 'text-amber-500 font-bold' : 'text-muted'}`}>
                     {i + 1}
                   </span>
-                  <span className="text-black dark:text-white truncate">{s.title}</span>
-                  <span className="text-xs text-muted truncate hidden sm:inline">{s.artist}</span>
+                  <span className="text-black dark:text-white trun分类e">{s.title}</span>
+                  <span className="text-xs text-muted trun分类e hidden sm:inline">{s.artist}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <div className="w-20 h-1.5 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden">
@@ -828,7 +1176,7 @@ function MusicLogsView() {
         <div className="space-y-1 max-h-96 overflow-y-auto text-xs">
           {logs.map((l, i) => (
             <div key={l.id || i} className="flex flex-wrap justify-between py-1.5 border-b border-black/5 dark:border-white/5 last:border-0 gap-x-3">
-              <span className="text-muted truncate max-w-[160px]">{l.songTitle || '--'}</span>
+              <span className="text-muted trun分类e max-w-[160px]">{l.song文章标题 || '--'}</span>
               <span className="text-muted/60">
                 {l.songArtist || '--'}
                 {l.ip ? ` · ${l.ip}` : ''}
@@ -884,7 +1232,7 @@ function StatsView({ password }) {
           <div className="space-y-1 max-h-80 overflow-y-auto text-xs">
             {stats.recent.slice(0, 30).map((r, i) => (
               <div key={i} className="flex flex-wrap justify-between py-1.5 border-b border-black/5 dark:border-white/5 last:border-0 gap-x-3">
-                <span className="text-muted truncate max-w-[200px]">{r.page || '/'}</span>
+                <span className="text-muted trun分类e max-w-[200px]">{r.page || '/'}</span>
                 <span className="text-muted/60">
                   {r.ip}
                   {[r.country, r.province, r.city].filter(Boolean).length > 0 && (
@@ -894,7 +1242,7 @@ function StatsView({ password }) {
                   {r.os && r.os !== '其他' ? ` · ${r.os}` : ''}
                   {r.model ? ` · ${r.model}` : ''}
                 </span>
-                <span className="text-muted font-mono">{(r.createdAt || '').substring(11, 19)}</span>
+                <span className="text-muted font-mono">{(r.createdAt || '').substring(0, 19).replace('T', ' ')}</span>
               </div>
             ))}
           </div>
@@ -903,3 +1251,8 @@ function StatsView({ password }) {
     </div>
   )
 }
+
+
+
+
+

@@ -44,7 +44,10 @@ CREATE TABLE posts (
     summary_zh TEXT,
     content_en LONGTEXT,
     content_zh LONGTEXT,
-    featured BOOLEAN DEFAULT FALSE
+    featured BOOLEAN DEFAULT FALSE,
+    cover VARCHAR(1000),
+    is_draft BOOLEAN DEFAULT FALSE,
+    scheduled_publish_at DATETIME
 );
 
 CREATE TABLE notes (

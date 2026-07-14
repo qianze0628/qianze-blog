@@ -1,13 +1,16 @@
 package com.qianze.entity;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class Post {
     private Long id;
     private String slug;
     private String title;
     private String titleZh;
-    private LocalDate date;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    private LocalDateTime date;
     private String category;
     private Integer readTime;
     private String tags;
@@ -16,6 +19,10 @@ public class Post {
     private String contentEn;
     private String contentZh;
     private Boolean featured;
+    private String cover;
+    private Boolean isDraft;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    private LocalDateTime scheduledPublishAt;
 
     public Post() {}
 
@@ -27,8 +34,8 @@ public class Post {
     public void setTitle(String title) { this.title = title; }
     public String getTitleZh() { return titleZh; }
     public void setTitleZh(String titleZh) { this.titleZh = titleZh; }
-    public LocalDate getDate() { return date; }
-    public void setDate(LocalDate date) { this.date = date; }
+    public LocalDateTime getDate() { return date; }
+    public void setDate(LocalDateTime date) { this.date = date; }
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
     public Integer getReadTime() { return readTime; }
@@ -45,4 +52,10 @@ public class Post {
     public void setContentZh(String contentZh) { this.contentZh = contentZh; }
     public Boolean getFeatured() { return featured; }
     public void setFeatured(Boolean featured) { this.featured = featured; }
+    public String getCover() { return cover; }
+    public void setCover(String cover) { this.cover = cover; }
+    public Boolean getIsDraft() { return isDraft; }
+    public void setIsDraft(Boolean isDraft) { this.isDraft = isDraft; }
+    public LocalDateTime getScheduledPublishAt() { return scheduledPublishAt; }
+    public void setScheduledPublishAt(LocalDateTime scheduledPublishAt) { this.scheduledPublishAt = scheduledPublishAt; }
 }

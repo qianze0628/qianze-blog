@@ -29,3 +29,39 @@ body {
 .preserve-3d { transform-style: preserve-3d; }
 .backface-hidden { backface-visibility: hidden; }
 .rotate-y-180 { transform: rotateY(180deg); }
+
+/* ── Mac 风格代码块：红绿灯三圆点窗口 ── */
+pre {
+  position: relative;
+  padding-top: 2.4rem !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+/* 顶部标题栏底色 */
+pre::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2rem;
+  background: #e8e8ea;
+  z-index: 1;
+}
+.dark pre::before {
+  background: #2d2d30;
+}
+/* 三个红绿灯圆点：红 → box-shadow 横移生成黄绿 */
+pre::after {
+  content: "";
+  position: absolute;
+  top: 0.7rem;
+  left: 1rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff5f57;
+  box-shadow: 20px 0 #ffbd2e, 40px 0 #28c840;
+  z-index: 2;
+}
+/* 标签：代码块右上角显示语言名（可选，后续可扩展） */

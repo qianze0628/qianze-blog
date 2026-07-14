@@ -108,6 +108,11 @@ CREATE TABLE IF NOT EXISTS guest_music_logs (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- posts: 封面图、草稿状态、定时发布
+CALL add_col('posts', 'cover',                'VARCHAR(1000)');
+CALL add_col('posts', 'is_draft',             'BOOLEAN DEFAULT FALSE');
+CALL add_col('posts', 'scheduled_publish_at', 'DATETIME');
+
 -- 清理
 DROP PROCEDURE IF EXISTS add_col;
 DROP PROCEDURE IF EXISTS mod_col;
