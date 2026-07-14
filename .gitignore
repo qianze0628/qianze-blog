@@ -46,6 +46,11 @@ data/
 springboot/uploads/
 springboot/music/
 
+# 含敏感凭据的本地配置文件（使用 application-example.yml 作为模板）
+springboot/src/main/resources/application.yml
+springboot/src/main/resources/application-dev.yml
+springboot/src/main/resources/application-prod.yml
+
 # 排除子项目
 nextjs/
 react/DEPLOY.md
